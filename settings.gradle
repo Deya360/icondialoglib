@@ -1,5 +1,1 @@
-include ":app", ":lib", ":utils"
-
-include ":iconpacks:iconpack-default",
-        ":iconpacks:iconpack-fa",
-        ":iconpacks:iconpack-mdi"
+include ":lib"
