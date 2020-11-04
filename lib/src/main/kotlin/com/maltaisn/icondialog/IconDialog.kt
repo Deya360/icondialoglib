@@ -176,24 +176,24 @@ class IconDialog : DialogFragment(), IconDialogContract.View {
         // Needed on API 16 to remove header space, see https://stackoverflow.com/a/41752000/5288316
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
 
+        // Get maximum dialog dimensions
+        val fgPadding = Rect()
+        val window = dialog.window!!
+        window.decorView.background.getPadding(fgPadding)
+        val metrics = context.resources.displayMetrics
+        var height = metrics.heightPixels - fgPadding.top - fgPadding.bottom
+        var width = metrics.widthPixels - fgPadding.top - fgPadding.bottom
+
+        // Set dialog's dimensions
+        if (width > maxDialogWidth) width = maxDialogWidth
+        if (height > maxDialogHeight) height = maxDialogHeight
+        window.setLayout(width, height)
+
+        // Set dialog's content
+        dialogView.layoutParams = ViewGroup.LayoutParams(width, height)
+        dialog.setContentView(dialogView)
+
         dialog.setOnShowListener {
-            // Get maximum dialog dimensions
-            val fgPadding = Rect()
-            val window = dialog.window!!
-            window.decorView.background.getPadding(fgPadding)
-            val metrics = context.resources.displayMetrics
-            var height = metrics.heightPixels - fgPadding.top - fgPadding.bottom
-            var width = metrics.widthPixels - fgPadding.top - fgPadding.bottom
-
-            // Set dialog's dimensions
-            if (width > maxDialogWidth) width = maxDialogWidth
-            if (height > maxDialogHeight) height = maxDialogHeight
-            window.setLayout(width, height)
-
-            // Set dialog's content
-            dialogView.layoutParams = ViewGroup.LayoutParams(width, height)
-            dialog.setContentView(dialogView)
-
             // Attach the presenter
             presenter = IconDialogPresenter()
             presenter?.attach(this, state)
