@@ -23,7 +23,6 @@ import com.maltaisn.icondialog.data.Icon
 import com.maltaisn.icondialog.data.IconTag
 import java.util.*
 
-
 /**
  * An icon pack containing icons, categories and tags
  *
@@ -39,6 +38,7 @@ class IconPack(val parent: IconPack? = null,
                val categories: MutableMap<Int, Category> = mutableMapOf(),
                val tags: MutableMap<String, IconTag> = mutableMapOf(),
                val locales: List<Locale> = emptyList(),
+               val partiallyLoaded: Boolean = false,
                @XmlRes val tagsXml: Int = 0) {
 
     /**
@@ -48,15 +48,15 @@ class IconPack(val parent: IconPack? = null,
     val allIcons: MutableList<Icon>
         get() {
             val iconsMap = linkedMapOf<Int, Icon>()
-            var currentPack: IconPack? = this
-            while (currentPack != null) {
-                for ((id, icon) in currentPack.icons) {
+            fun descent(ip : IconPack) {
+                if (ip.parent!=null) descent(ip.parent)
+                for ((id, icon) in ip.icons) {
                     if (id !in iconsMap) {
                         iconsMap[id] = icon
                     }
                 }
-                currentPack = currentPack.parent
             }
+            descent(this)
             return iconsMap.values.toMutableList()
         }
 

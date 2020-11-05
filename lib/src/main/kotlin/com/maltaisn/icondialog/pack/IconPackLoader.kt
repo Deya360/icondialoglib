@@ -47,9 +47,11 @@ class IconPackLoader(context: Context) {
      * @throws IconPackParseException Thrown when icons or tags XML is invalid.
      */
     fun load(@XmlRes iconsXml: Int, @XmlRes tagsXml: Int = 0,
-             locales: List<Locale> = emptyList(), parent: IconPack? = null): IconPack {
-        val pack = IconPack(parent = parent, locales = locales, tagsXml = tagsXml)
-        loadIcons(pack, iconsXml)
+             locales: List<Locale> = emptyList(), parent: IconPack? = null,
+             partialIds: List<Int> = emptyList()): IconPack {
+        val pack = IconPack(parent = parent, locales = locales, tagsXml = tagsXml,
+                partiallyLoaded = partialIds.isNotEmpty())
+        loadIcons(pack, iconsXml, partialIds.distinct().toMutableList())
         loadTags(pack)
         return pack
     }
@@ -81,7 +83,7 @@ class IconPackLoader(context: Context) {
     }
 
 
-    private fun loadIcons(pack: IconPack, @XmlRes iconsXml: Int) {
+    private fun loadIcons(pack: IconPack, @XmlRes iconsXml: Int, partialIds : MutableList<Int>) {
         val newIcons = mutableMapOf<Int, Icon>()
         val newCategories = mutableMapOf<Int, Category>()
         var categoryId = Icon.NO_CATEGORY
@@ -95,6 +97,10 @@ class IconPackLoader(context: Context) {
         val parser = context.resources.getXml(iconsXml)
         var eventType = parser.eventType
         while (eventType != XmlPullParser.END_DOCUMENT) {
+            if (pack.partiallyLoaded && partialIds.isEmpty()) {
+                break
+            }
+
             val element = parser.name
             if (eventType == XmlPullParser.START_TAG) {
                 if (element == XML_TAG_ICONS) {
@@ -117,12 +123,24 @@ class IconPackLoader(context: Context) {
                             newCategories[categoryId] = category
                         }
                         XML_TAG_ICON -> {
-                            val icon = parseIcon(parser, pack, categoryId, packWidth, packHeight)
-                            if (icon.id in newIcons) {
-                                parseError("Duplicate icon ID '${icon.id}' in same file.")
+                            fun loadIcon(peekedId: Int? = null) {
+                                val icon = parseIcon(parser, pack, peekedId, categoryId, packWidth, packHeight)
+                                if (icon.id in newIcons) {
+                                    parseError("Duplicate icon ID '${icon.id}' in same file.")
+                                }
+                                newIcons[icon.id] = icon
+                                iconStarted = true
                             }
-                            newIcons[icon.id] = icon
-                            iconStarted = true
+
+                            if (!pack.partiallyLoaded) {
+                                loadIcon()
+                            } else {
+                                val id: Int? = peakIconId(parser)
+                                if (id in partialIds) {
+                                    partialIds.remove(element = id)
+                                    loadIcon(id)
+                                }
+                            }
                         }
                         else -> parseError("Unknown element <$element>.")
                     }
@@ -181,9 +199,14 @@ class IconPackLoader(context: Context) {
         return Category(id, name, nameRes)
     }
 
-    private fun parseIcon(parser: XmlResourceParser, pack: IconPack,
+    private fun peakIconId(parser: XmlResourceParser) : Int? {
+        val value = parser.getAttributeValue(null, XML_ATTR_ICON_ID).toIntOrNull()
+        return if (value == null || value < 0) return null else value
+    }
+
+    private fun parseIcon(parser: XmlResourceParser, pack: IconPack , peekedId: Int?,
                           categoryId: Int, packWidth: Int, packHeight: Int): Icon {
-        val id = parser.getPositiveInt(XML_ATTR_ICON_ID) { "Invalid icon ID '$it'." }
+        val id = peekedId ?: parser.getPositiveInt(XML_ATTR_ICON_ID) { "Invalid icon ID '$it'." }
                 ?: parseError("Icon must have an ID.")
         val overriden = pack.getIcon(id)
 
