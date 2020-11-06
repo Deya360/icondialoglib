@@ -28,12 +28,14 @@ import java.util.*
 /**
  * Class for loading icon packs from XML resources.
  * @param context Any context, needed to load the XML resources.
+ * @param sizeAdjustDp Adjust icon size by stated dps (i.e: android:height and android:width
+ * attributes in a VectorDrawable .xml file), can be 0 to keep size unchanged (24dp).
  */
-class IconPackLoader(context: Context) {
+class IconPackLoader(context: Context, sizeAdjustDp: Int = 0) {
 
     private val context = context.applicationContext
 
-    var drawableLoader = IconDrawableLoader(context)
+    var drawableLoader = IconDrawableLoader(context, sizeAdjustDp)
         internal set
 
     /**
@@ -43,15 +45,15 @@ class IconPackLoader(context: Context) {
      * @param tagsXml XML resource containing the tags, can be `0` if there aren't tags.
      * @param locales List of locales supported by the icon pack, can be empty if there are no tags.
      * @param parent Parent pack for inheriting data, can be `null` for none.
+     * @param partialLoadIds List of icons to be loaded, can be empty to load all icons (default).
      *
      * @throws IconPackParseException Thrown when icons or tags XML is invalid.
      */
-    fun load(@XmlRes iconsXml: Int, @XmlRes tagsXml: Int = 0,
-             locales: List<Locale> = emptyList(), parent: IconPack? = null,
-             partialIds: List<Int> = emptyList()): IconPack {
-        val pack = IconPack(parent = parent, locales = locales, tagsXml = tagsXml,
-                partiallyLoaded = partialIds.isNotEmpty())
-        loadIcons(pack, iconsXml, partialIds.distinct().toMutableList())
+    fun load(@XmlRes iconsXml: Int, @XmlRes tagsXml: Int = 0, locales: List<Locale> = emptyList(),
+             parent: IconPack? = null, partialLoadIds: List<Int> = emptyList()): IconPack {
+        val pack = IconPack(parent = parent, locales = locales, tagsXml = tagsXml)
+
+        loadIcons(pack, iconsXml, partialLoadIds.filter { it >= 0 }.distinct().toMutableList())
         loadTags(pack)
         return pack
     }
@@ -84,6 +86,7 @@ class IconPackLoader(context: Context) {
 
 
     private fun loadIcons(pack: IconPack, @XmlRes iconsXml: Int, partialIds : MutableList<Int>) {
+        val loadPartially = partialIds.isNotEmpty()
         val newIcons = mutableMapOf<Int, Icon>()
         val newCategories = mutableMapOf<Int, Category>()
         var categoryId = Icon.NO_CATEGORY
@@ -97,7 +100,7 @@ class IconPackLoader(context: Context) {
         val parser = context.resources.getXml(iconsXml)
         var eventType = parser.eventType
         while (eventType != XmlPullParser.END_DOCUMENT) {
-            if (pack.partiallyLoaded && partialIds.isEmpty()) {
+            if (loadPartially && partialIds.isEmpty()) {
                 break
             }
 
@@ -132,7 +135,7 @@ class IconPackLoader(context: Context) {
                                 iconStarted = true
                             }
 
-                            if (!pack.partiallyLoaded) {
+                            if (!loadPartially) {
                                 loadIcon()
                             } else {
                                 val id: Int? = peakIconId(parser)

@@ -38,7 +38,6 @@ class IconPack(val parent: IconPack? = null,
                val categories: MutableMap<Int, Category> = mutableMapOf(),
                val tags: MutableMap<String, IconTag> = mutableMapOf(),
                val locales: List<Locale> = emptyList(),
-               val partiallyLoaded: Boolean = false,
                @XmlRes val tagsXml: Int = 0) {
 
     /**
