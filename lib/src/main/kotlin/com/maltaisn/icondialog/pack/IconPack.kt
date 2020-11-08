@@ -88,6 +88,16 @@ class IconPack(val parent: IconPack? = null,
     }
 
     /**
+     * Get the loaded drawable for icon [id]. If loaded drawable not found, parent packs are
+     * searched recursively. Returns `null` if icon not with such not found or if no loaded
+     * drawable for icon exists.
+     * @see getIconDrawable to load drawable.
+     */
+    fun getLoadedIconDrawable(id: Int): Drawable? {
+        return icons[id]?.drawable ?: parent?.getLoadedIconDrawable(id)
+    }
+
+    /**
      * Load all icons in this pack with a [loader].
      * This is probably best called on another thread than the main thread.
      */
