@@ -22,6 +22,7 @@ import com.maltaisn.icondialog.IconDialog.*
 import com.maltaisn.icondialog.IconDialogContract.View
 import com.maltaisn.icondialog.data.Category
 import com.maltaisn.icondialog.data.Icon
+import com.maltaisn.icondialog.data.NamedTag
 import com.maltaisn.icondialog.pack.IconPack
 
 
@@ -307,6 +308,27 @@ internal class IconDialogPresenter : IconDialogContract.Presenter {
         }
 
         view?.notifyIconItemChanged(pos)
+    }
+
+    override fun onIconItemLongClicked(pos: Int) {
+        if (settings.showTagsOnLongPress) {
+            val item = listItems[pos] as IconItem
+
+            // Prepare tags text for toast
+            val tags = mutableListOf<String>()
+            for (tagName in item.icon.tags) {
+                val tag = iconPack?.getTag(tagName) as? NamedTag ?: continue
+                tags += if (tag.values.size == 1) {
+                    tag.values.first().value
+                } else {
+                    "{${tag.values.joinToString { it.value }}}"
+                }
+            }
+            if (tags.isNotEmpty()) {
+                val text = tags.joinToString()
+                view?.showIconTags(text)
+            }
+        }
     }
 
     private fun confirmSelection() {

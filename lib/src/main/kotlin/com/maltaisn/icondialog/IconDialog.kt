@@ -341,6 +341,9 @@ class IconDialog : DialogFragment(), IconDialogContract.View {
         Toast.makeText(context, R.string.icd_max_sel_message, Toast.LENGTH_SHORT).show()
     }
 
+    override fun showIconTags(text: String) {
+        Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
+    }
 
     private val callback: Callback
         get() = (parentFragment as? Callback)
@@ -364,6 +367,10 @@ class IconDialog : DialogFragment(), IconDialogContract.View {
             init {
                 iconForeground.setOnClickListener {
                     presenter?.onIconItemClicked(adapterPosition)
+                }
+                iconForeground.setOnLongClickListener {
+                    presenter?.onIconItemLongClicked(adapterPosition)
+                    return@setOnLongClickListener true
                 }
             }
 

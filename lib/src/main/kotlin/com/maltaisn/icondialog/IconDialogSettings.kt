@@ -62,7 +62,10 @@ data class IconDialogSettings(
         val showSelectBtn: Boolean,
 
         /** Whether to show a button to clear icon selection. Default is `false`. */
-        val showClearBtn: Boolean
+        val showClearBtn: Boolean,
+
+        /** Whether to show a toast with icon tags on long press. Default is `false`. */
+        val showTagsOnLongPress: Boolean
 ) : Parcelable {
 
     class Builder {
@@ -75,10 +78,11 @@ data class IconDialogSettings(
         var showMaxSelectionMessage = false
         var showSelectBtn = true
         var showClearBtn = false
+        var showTagsOnLongPress = false
 
         fun build() = IconDialogSettings(iconFilter, searchVisibility,
                 headersVisibility, titleVisibility, dialogTitle, maxSelection,
-                showMaxSelectionMessage, showSelectBtn, showClearBtn)
+                showMaxSelectionMessage, showSelectBtn, showClearBtn, showTagsOnLongPress)
     }
 
     // Parcelable stuff
@@ -93,6 +97,7 @@ data class IconDialogSettings(
         bundle.putBoolean("showMaxSelectionMessage", showMaxSelectionMessage)
         bundle.putBoolean("showSelectBtn", showSelectBtn)
         bundle.putBoolean("showClearBtn", showClearBtn)
+        bundle.putBoolean("showTagsOnLongPress", showTagsOnLongPress)
         parcel.writeBundle(bundle)
     }
 
@@ -114,6 +119,7 @@ data class IconDialogSettings(
                 showMaxSelectionMessage = bundle.getBoolean("showMaxSelectionMessage")
                 showSelectBtn = bundle.getBoolean("showSelectBtn")
                 showClearBtn = bundle.getBoolean("showClearBtn")
+                showTagsOnLongPress = bundle.getBoolean("showTagsOnLongPress")
             }
 
             override fun newArray(size: Int) = arrayOfNulls<IconDialogSettings>(size)

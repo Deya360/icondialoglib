@@ -58,6 +58,7 @@ internal interface IconDialogContract {
         fun notifyAllIconsChanged()
 
         fun showMaxSelectionMessage()
+        fun showIconTags(text: String)
     }
 
     interface Presenter {
@@ -77,6 +78,7 @@ internal interface IconDialogContract {
         fun onBindIconItemView(pos: Int, itemView: IconItemView)
         fun onBindHeaderItemView(pos: Int, itemView: HeaderItemView)
         fun onIconItemClicked(pos: Int)
+        fun onIconItemLongClicked(pos: Int)
 
         fun isHeader(pos: Int): Boolean
         fun getHeaderPositionForItem(pos: Int): Int
