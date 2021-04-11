@@ -14,179 +14,179 @@
   limitations under the License.
   -->
 
-<androidx.constraintlayout.widget.ConstraintLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/icd_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingTop="8dp"
-    android:background="?colorBackgroundFloating"
-    tools:theme="@style/IcdStyle"
     >
 
-    <TextView
-        android:id="@+id/icd_txv_title"
-        style="?icdDialogTitleStyle"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        app:layout_constraintBottom_toTopOf="@id/icd_edt_search"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_chainStyle="spread_inside"
-        tools:text="@string/icd_title"
-        />
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/icd_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?colorBackgroundFloating"
+        tools:theme="@style/IcdStyle">
 
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/icd_imv_search"
-        style="?icdSearchIconStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="8dp"
-        android:layout_marginStart="8dp"
-        app:layout_constraintBottom_toBottomOf="@id/icd_edt_search"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/icd_edt_search"
-        tools:ignore="ContentDescription"
-        />
+        <Button
+            android:id="@+id/icd_btn_clear"
+            style="?icdDialogButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginLeft="5dp"
+            android:text="@string/icd_action_clear"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <EditText
-        android:id="@+id/icd_edt_search"
-        style="?icdSearchBarStyle"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toTopOf="@id/icd_div_header"
-        app:layout_constraintEnd_toStartOf="@+id/icd_imv_clear_search"
-        app:layout_constraintStart_toEndOf="@+id/icd_imv_search"
-        app:layout_constraintTop_toBottomOf="@+id/icd_txv_title"
-        tools:ignore="Autofill,LabelFor,TextFields"
-        />
+        <Button
+            android:id="@+id/icd_btn_cancel"
+            style="?icdDialogButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:layout_marginRight="5dp"
+            android:text="@string/icd_action_cancel"
+            app:layout_constraintEnd_toStartOf="@+id/icd_btn_select"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/icd_imv_clear_search"
-        style="?icdCancelSearchIconStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        app:layout_constraintBottom_toBottomOf="@id/icd_edt_search"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/icd_edt_search"
-        tools:ignore="ContentDescription"
-        />
+        <Button
+            android:id="@+id/icd_btn_select"
+            style="?icdDialogButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:layout_marginRight="5dp"
+            android:text="@string/icd_action_select"
+            app:layout_constraintBottom_toBottomOf="@+id/icd_btn_cancel"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/icd_btn_cancel" />
 
-    <View
-        android:id="@+id/icd_div_header"
-        android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/icd_rcv_icon_list"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/icd_edt_search"
-        android:background="?icdDividerDrawable"
-        tools:background="#1f000000"
-        />
+        <View
+            android:id="@+id/icd_div_footer"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?icdDividerDrawable"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/icd_btn_cancel"
+            tools:background="#1f000000" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/icd_rcv_icon_list"
-        style="?icdDialogListStyle"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/icd_div_footer"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/icd_div_header"
-        tools:itemCount="20"
-        tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-        tools:listitem="@layout/icd_item_icon"
-        tools:spanCount="6"
-        />
+        <TextView
+            android:id="@+id/icd_txv_title"
+            style="?icdDialogTitleStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/icd_div_footer"
+            tools:text="@string/icd_title"
+            tools:visibility="gone"
 
-    <ProgressBar
-        android:id="@+id/icd_progress_bar"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        app:layout_constraintBottom_toBottomOf="@id/icd_rcv_icon_list"
-        app:layout_constraintEnd_toEndOf="@id/icd_rcv_icon_list"
-        app:layout_constraintStart_toStartOf="@id/icd_rcv_icon_list"
-        app:layout_constraintTop_toTopOf="@id/icd_rcv_icon_list"
-        android:visibility="gone"
-        tools:visibility="visible"
-        />
+            />
 
-    <TextView
-        android:id="@+id/icd_txv_no_result"
-        style="?icdNoResultLabelStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/icd_div_header"
-        android:gravity="center"
-        android:visibility="gone"
-        />
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/icd_imv_search"
+            style="?icdSearchIconStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            app:layout_constraintBottom_toBottomOf="@id/icd_edt_search"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/icd_edt_search"
+            tools:ignore="ContentDescription" />
 
-    <View
-        android:id="@+id/icd_div_footer"
-        android:layout_width="0dp"
-        android:layout_height="1dp"
-        app:layout_constraintBottom_toTopOf="@id/icd_btn_select"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/icd_rcv_icon_list"
-        android:background="?icdDividerDrawable"
-        tools:background="#1f000000"
-        />
+        <EditText
+            android:id="@+id/icd_edt_search"
+            style="?icdSearchBarStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:paddingVertical="4dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            app:layout_constraintBottom_toTopOf="@id/icd_div_header"
+            app:layout_constraintEnd_toStartOf="@id/icd_imv_clear_search"
+            app:layout_constraintStart_toEndOf="@id/icd_imv_search"
+            app:layout_constraintTop_toBottomOf="@id/topBarrier"
+            tools:ignore="Autofill,LabelFor,TextFields" />
 
-    <Button
-        android:id="@+id/icd_btn_clear"
-        style="?icdDialogButtonStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="5dp"
-        android:layout_marginStart="5dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/icd_div_footer"
-        android:text="@string/icd_action_clear"
-        />
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/icd_imv_clear_search"
+            style="?icdCancelSearchIconStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            app:layout_constraintBottom_toBottomOf="@id/icd_edt_search"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/icd_edt_search"
+            tools:ignore="ContentDescription" />
 
-    <Button
-        android:id="@+id/icd_btn_cancel"
-        style="?icdDialogButtonStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="5dp"
-        android:layout_marginRight="5dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/icd_btn_select"
-        app:layout_constraintTop_toBottomOf="@+id/icd_div_footer"
-        android:text="@string/icd_action_cancel"
-        />
+        <View
+            android:id="@+id/icd_div_header"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="8dp"
+            android:background="?icdDividerDrawable"
+            app:layout_constraintBottom_toTopOf="@id/icd_rcv_icon_list"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/icd_edt_search"
+            tools:background="#1f000000" />
 
-    <Button
-        android:id="@+id/icd_btn_select"
-        style="?icdDialogButtonStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="5dp"
-        android:layout_marginRight="5dp"
-        app:layout_constraintBottom_toBottomOf="@+id/icd_btn_cancel"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/icd_btn_cancel"
-        android:text="@string/icd_action_select"
-        />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/icd_rcv_icon_list"
+            style="?icdDialogListStyle"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/icd_div_header"
+            tools:itemCount="20"
+            tools:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+            tools:listitem="@layout/icd_item_icon"
+            tools:spanCount="6" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <ProgressBar
+            android:id="@+id/icd_progress_bar"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/icd_rcv_icon_list"
+            app:layout_constraintEnd_toEndOf="@id/icd_rcv_icon_list"
+            app:layout_constraintStart_toStartOf="@id/icd_rcv_icon_list"
+            app:layout_constraintTop_toTopOf="@id/icd_rcv_icon_list"
+            tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/icd_txv_no_result"
+            style="?icdNoResultLabelStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:gravity="center"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/icd_div_header"
+            tools:visibility="visible" />
+
+        <androidx.constraintlayout.widget.Barrier
+            android:id="@+id/topBarrier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:barrierDirection="bottom"
+            app:constraint_referenced_ids="icd_txv_title,icd_btn_clear,icd_btn_cancel,icd_btn_select,icd_div_footer"
+            tools:layout_editor_absoluteY="8dp" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</RelativeLayout>

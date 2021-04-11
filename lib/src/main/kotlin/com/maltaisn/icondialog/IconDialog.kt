@@ -162,15 +162,6 @@ class IconDialog : BottomSheetDialogFragment(), IconDialogContract.View {
         setupViews()
         savedInstanceState?.let { setVars(it) }
 
-        // Get maximum dialog dimensions
-        with (context!!.resources.displayMetrics) {
-            // Set dialog's dimensions
-            dialog!!.window!!.setLayout(widthPixels, heightPixels)
-
-            // Set dialog's content
-            dialogView.layoutParams = ViewGroup.LayoutParams(widthPixels, heightPixels)
-        }
-
         return dialogView
     }
 
