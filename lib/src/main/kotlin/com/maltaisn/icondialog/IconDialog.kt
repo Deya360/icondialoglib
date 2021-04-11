@@ -100,6 +100,7 @@ class IconDialog : BottomSheetDialogFragment(), IconDialogContract.View {
     private var maxDialogHeight = 0
     private var iconSize = 0
     private lateinit var unavailableIconDrawable: Drawable
+    private lateinit var contextWrapper: ContextThemeWrapper
 
 
     @SuppressLint("InflateParams", "Recycle")
@@ -109,8 +110,7 @@ class IconDialog : BottomSheetDialogFragment(), IconDialogContract.View {
         val style = context.obtainStyledAttributes(intArrayOf(R.attr.icdStyle)).use {
             it.getResourceId(0, R.style.IcdStyle)
         }
-        val contextWrapper = ContextThemeWrapper(context, style)
-        val localInflater = LayoutInflater.from(contextWrapper)
+        contextWrapper = ContextThemeWrapper(context, style)
         unavailableIconDrawable = ResourcesCompat.getDrawable(context.resources, R.drawable.icd_ic_unavailable, null)!!
 
         // Get style attributes values
@@ -122,9 +122,6 @@ class IconDialog : BottomSheetDialogFragment(), IconDialogContract.View {
 
         progressHandler = Handler()
         searchHandler = Handler()
-
-        dialogView = localInflater.inflate(R.layout.icd_dialog_icon, null, false)
-        setupViews()
 
         // Dialog
         val dialog = BottomSheetDialog(contextWrapper, theme)
@@ -179,6 +176,26 @@ class IconDialog : BottomSheetDialogFragment(), IconDialogContract.View {
         return dialog
     }
 
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+
+        //Remove the bottomSheet dialog background
+        (view!!.parent as View).setBackgroundColor(Color.TRANSPARENT)
+
+        //set dismiss on click of empty background above content (top margin)
+        view!!.setOnClickListener {
+            dismiss()
+        }
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        val localInflater = LayoutInflater.from(contextWrapper)
+        dialogView = localInflater.inflate(R.layout.icd_dialog_icon, null, false)
+        setupViews()
+
+        return view
+    }
+
     private fun setupViews() {
         titleTxv = dialogView.findViewById(R.id.icd_txv_title)
         headerDiv = dialogView.findViewById(R.id.icd_div_header)
@@ -208,7 +225,7 @@ class IconDialog : BottomSheetDialogFragment(), IconDialogContract.View {
         }
 
         // Icon list
-        listRcv = this.dialogView.findViewById(R.id.icd_rcv_icon_list)
+        listRcv = dialogView.findViewById(R.id.icd_rcv_icon_list)
         listAdapter = IconAdapter()
         listLayout = IconLayoutManager(requireContext(), iconSize)
         listLayout.spanSizeLookup = object : SpanSizeLookup() {
@@ -221,24 +238,14 @@ class IconDialog : BottomSheetDialogFragment(), IconDialogContract.View {
         listRcv.layoutManager = listLayout
 
         // Footer
-        footerDiv = this.dialogView.findViewById(R.id.icd_div_footer)
-        selectBtn = this.dialogView.findViewById(R.id.icd_btn_select)
-        cancelBtn = this.dialogView.findViewById(R.id.icd_btn_cancel)
-        clearBtn = this.dialogView.findViewById(R.id.icd_btn_clear)
+        footerDiv = dialogView.findViewById(R.id.icd_div_footer)
+        selectBtn = dialogView.findViewById(R.id.icd_btn_select)
+        cancelBtn = dialogView.findViewById(R.id.icd_btn_cancel)
+        clearBtn = dialogView.findViewById(R.id.icd_btn_clear)
         selectBtn.setOnClickListener { presenter?.onSelectBtnClicked() }
         cancelBtn.setOnClickListener { presenter?.onCancelBtnClicked() }
         clearBtn.setOnClickListener { presenter?.onClearBtnClicked() }
     }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        //set dismiss on click of empty background above content (top margin)
-        view!!.setOnClickListener {
-            dismiss()
-        }
-    }
-
 
     override fun onSaveInstanceState(state: Bundle) {
         super.onSaveInstanceState(state)
