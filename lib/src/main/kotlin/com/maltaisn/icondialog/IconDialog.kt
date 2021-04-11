@@ -16,12 +16,10 @@
 
 package com.maltaisn.icondialog
 
-import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.res.Configuration
-import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
@@ -47,7 +45,6 @@ import com.maltaisn.icondialog.data.Category
 import com.maltaisn.icondialog.data.Icon
 import com.maltaisn.icondialog.pack.IconPack
 import java.util.*
-
 
 class IconDialog : BottomSheetDialogFragment(), IconDialogContract.View {
 
@@ -100,7 +97,6 @@ class IconDialog : BottomSheetDialogFragment(), IconDialogContract.View {
     private lateinit var contextWrapper: ContextThemeWrapper
 
 
-    @SuppressLint("InflateParams", "Recycle")
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         // Wrap icon dialog theme to context
         val context = requireContext()
@@ -150,7 +146,6 @@ class IconDialog : BottomSheetDialogFragment(), IconDialogContract.View {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
-
         dialog.setOnShowListener {
             // Attach the presenter
             presenter = IconDialogPresenter()
@@ -166,6 +161,15 @@ class IconDialog : BottomSheetDialogFragment(), IconDialogContract.View {
 
         setupViews()
         savedInstanceState?.let { setVars(it) }
+
+        // Get maximum dialog dimensions
+        with (context!!.resources.displayMetrics) {
+            // Set dialog's dimensions
+            dialog!!.window!!.setLayout(widthPixels, heightPixels)
+
+            // Set dialog's content
+            dialogView.layoutParams = ViewGroup.LayoutParams(widthPixels, heightPixels)
+        }
 
         return dialogView
     }
