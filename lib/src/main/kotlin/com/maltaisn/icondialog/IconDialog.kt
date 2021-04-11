@@ -233,9 +233,6 @@ class IconDialog : BottomSheetDialogFragment(), IconDialogContract.View {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        //Remove the bottomSheet dialog background
-        (view!!.parent as View).setBackgroundColor(Color.TRANSPARENT)
-
         //set dismiss on click of empty background above content (top margin)
         view!!.setOnClickListener {
             dismiss()
