@@ -25,10 +25,7 @@ import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.view.Window
+import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
@@ -126,34 +123,33 @@ class IconDialog : BottomSheetDialogFragment(), IconDialogContract.View {
         // Dialog
         val dialog = BottomSheetDialog(contextWrapper, theme)
         dialog.behavior.apply {
-            skipCollapsed = true
+            skipCollapsed = resources.configuration.orientation != Configuration.ORIENTATION_PORTRAIT
             halfExpandedRatio = 0.75f
 
             /* Fixes a bug where the bottom sheet is collapsed by default in landscape mode */
-            state = if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
-                BottomSheetBehavior.STATE_EXPANDED
-            else BottomSheetBehavior.STATE_HALF_EXPANDED
+            state = BottomSheetBehavior.STATE_HALF_EXPANDED
         }
+
+        val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        dialog.behavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
+                    if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
+                        dialog.behavior.state = BottomSheetBehavior.STATE_HALF_EXPANDED
+                    }
+                    imm.hideSoftInputFromWindow(searchEdt.windowToken, 0)
+                }
+            }
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                //no-op
+            }
+        })
 
         // Needed on API 16 to remove header space, see https://stackoverflow.com/a/41752000/5288316
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
 
-//        // Get maximum dialog dimensions
-//        val fgPadding = Rect()
-//        val window = dialog.window!!
-//        window.decorView.background.getPadding(fgPadding)
-//        val metrics = context.resources.displayMetrics
-//        var height = metrics.heightPixels - fgPadding.top - fgPadding.bottom
-//        var width = metrics.widthPixels - fgPadding.top - fgPadding.bottom
-//
-//        // Set dialog's dimensions
-//        if (width > maxDialogWidth) width = maxDialogWidth
-//        if (height > maxDialogHeight) height = maxDialogHeight
-//        window.setLayout(width, height)
-//
-//        // Set dialog's content
-//        dialogView.layoutParams = ViewGroup.LayoutParams(width, height)
-//        dialog.setContentView(dialogView)
 
         dialog.setOnShowListener {
             // Attach the presenter
@@ -161,39 +157,29 @@ class IconDialog : BottomSheetDialogFragment(), IconDialogContract.View {
             presenter?.attach(this, savedInstanceState)
         }
 
-        if (savedInstanceState != null) {
-            settings = savedInstanceState.getParcelable("settings")!!
-
-            // Restore layout manager state, which isn't saved by recycler view.
-            listLayout.onRestoreInstanceState(savedInstanceState.getParcelable("listLayoutState"))
-
-            // Restore search EditText state, which *should* be restored, but apparently isn't.
-            // The state of the view is actually saved in onSaveInstanceState, and it is still
-            // present here in the "state" bundle, but it doesn't get restored for some reason!
-            searchEdt.onRestoreInstanceState(savedInstanceState.getParcelable("searchEdtState"))
-        }
-
         return dialog
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-
-        //Remove the bottomSheet dialog background
-        (view!!.parent as View).setBackgroundColor(Color.TRANSPARENT)
-
-        //set dismiss on click of empty background above content (top margin)
-        view!!.setOnClickListener {
-            dismiss()
-        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val localInflater = LayoutInflater.from(contextWrapper)
         dialogView = localInflater.inflate(R.layout.icd_dialog_icon, null, false)
-        setupViews()
 
-        return view
+        setupViews()
+        savedInstanceState?.let { setVars(it) }
+
+        return dialogView
+    }
+
+    private fun setVars(savedInstanceState: Bundle) {
+        settings = savedInstanceState.getParcelable("settings")!!
+
+        // Restore layout manager state, which isn't saved by recycler view.
+        listLayout.onRestoreInstanceState(savedInstanceState.getParcelable("listLayoutState"))
+
+        // Restore search EditText state, which *should* be restored, but apparently isn't.
+        // The state of the view is actually saved in onSaveInstanceState, and it is still
+        // present here in the "state" bundle, but it doesn't get restored for some reason!
+        searchEdt.onRestoreInstanceState(savedInstanceState.getParcelable("searchEdtState"))
     }
 
     private fun setupViews() {
@@ -206,11 +192,16 @@ class IconDialog : BottomSheetDialogFragment(), IconDialogContract.View {
         progressBar = dialogView.findViewById(R.id.icd_progress_bar)
 
         // Search
+        searchImv.setOnClickListener {
+            searchEdt.requestFocus()
+        }
+
         searchEdt.addTextChangedListener {
             searchHandler.removeCallbacks(searchCallback)
             searchHandler.postDelayed(searchCallback, SEARCH_DELAY)
             presenter?.onSearchQueryChanged(it.toString())
         }
+        searchEdt.isSaveEnabled = false //doing this manually, the inbuilt logic cases unintended behaviour
         searchEdt.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 searchHandler.removeCallbacks(searchCallback)
