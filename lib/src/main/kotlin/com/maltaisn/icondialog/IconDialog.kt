@@ -20,7 +20,8 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
-import android.graphics.Rect
+import android.content.res.Configuration
+import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
@@ -38,9 +39,11 @@ import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.os.ConfigurationCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
-import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.maltaisn.icondialog.IconDialogContract.HeaderItemView
 import com.maltaisn.icondialog.IconDialogContract.IconItemView
 import com.maltaisn.icondialog.data.Category
@@ -49,7 +52,7 @@ import com.maltaisn.icondialog.pack.IconPack
 import java.util.*
 
 
-class IconDialog : DialogFragment(), IconDialogContract.View {
+class IconDialog : BottomSheetDialogFragment(), IconDialogContract.View {
 
     private var presenter: IconDialogContract.Presenter? = null
 
@@ -100,7 +103,7 @@ class IconDialog : DialogFragment(), IconDialogContract.View {
 
 
     @SuppressLint("InflateParams", "Recycle")
-    override fun onCreateDialog(state: Bundle?): Dialog {
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         // Wrap icon dialog theme to context
         val context = requireContext()
         val style = context.obtainStyledAttributes(intArrayOf(R.attr.icdStyle)).use {
@@ -120,8 +123,63 @@ class IconDialog : DialogFragment(), IconDialogContract.View {
         progressHandler = Handler()
         searchHandler = Handler()
 
-        // Create the dialog view
         dialogView = localInflater.inflate(R.layout.icd_dialog_icon, null, false)
+        setupViews()
+
+        // Dialog
+        val dialog = BottomSheetDialog(contextWrapper, theme)
+        dialog.behavior.apply {
+            skipCollapsed = true
+            halfExpandedRatio = 0.75f
+
+            /* Fixes a bug where the bottom sheet is collapsed by default in landscape mode */
+            state = if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
+                BottomSheetBehavior.STATE_EXPANDED
+            else BottomSheetBehavior.STATE_HALF_EXPANDED
+        }
+
+        // Needed on API 16 to remove header space, see https://stackoverflow.com/a/41752000/5288316
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+
+//        // Get maximum dialog dimensions
+//        val fgPadding = Rect()
+//        val window = dialog.window!!
+//        window.decorView.background.getPadding(fgPadding)
+//        val metrics = context.resources.displayMetrics
+//        var height = metrics.heightPixels - fgPadding.top - fgPadding.bottom
+//        var width = metrics.widthPixels - fgPadding.top - fgPadding.bottom
+//
+//        // Set dialog's dimensions
+//        if (width > maxDialogWidth) width = maxDialogWidth
+//        if (height > maxDialogHeight) height = maxDialogHeight
+//        window.setLayout(width, height)
+//
+//        // Set dialog's content
+//        dialogView.layoutParams = ViewGroup.LayoutParams(width, height)
+//        dialog.setContentView(dialogView)
+
+        dialog.setOnShowListener {
+            // Attach the presenter
+            presenter = IconDialogPresenter()
+            presenter?.attach(this, savedInstanceState)
+        }
+
+        if (savedInstanceState != null) {
+            settings = savedInstanceState.getParcelable("settings")!!
+
+            // Restore layout manager state, which isn't saved by recycler view.
+            listLayout.onRestoreInstanceState(savedInstanceState.getParcelable("listLayoutState"))
+
+            // Restore search EditText state, which *should* be restored, but apparently isn't.
+            // The state of the view is actually saved in onSaveInstanceState, and it is still
+            // present here in the "state" bundle, but it doesn't get restored for some reason!
+            searchEdt.onRestoreInstanceState(savedInstanceState.getParcelable("searchEdtState"))
+        }
+
+        return dialog
+    }
+
+    private fun setupViews() {
         titleTxv = dialogView.findViewById(R.id.icd_txv_title)
         headerDiv = dialogView.findViewById(R.id.icd_div_header)
         searchImv = dialogView.findViewById(R.id.icd_imv_search)
@@ -150,9 +208,9 @@ class IconDialog : DialogFragment(), IconDialogContract.View {
         }
 
         // Icon list
-        listRcv = dialogView.findViewById(R.id.icd_rcv_icon_list)
+        listRcv = this.dialogView.findViewById(R.id.icd_rcv_icon_list)
         listAdapter = IconAdapter()
-        listLayout = IconLayoutManager(context, iconSize)
+        listLayout = IconLayoutManager(requireContext(), iconSize)
         listLayout.spanSizeLookup = object : SpanSizeLookup() {
             override fun getSpanSize(pos: Int): Int {
                 if (pos !in 0 until listAdapter.itemCount) return 0
@@ -163,56 +221,27 @@ class IconDialog : DialogFragment(), IconDialogContract.View {
         listRcv.layoutManager = listLayout
 
         // Footer
-        footerDiv = dialogView.findViewById(R.id.icd_div_footer)
-        selectBtn = dialogView.findViewById(R.id.icd_btn_select)
-        cancelBtn = dialogView.findViewById(R.id.icd_btn_cancel)
-        clearBtn = dialogView.findViewById(R.id.icd_btn_clear)
+        footerDiv = this.dialogView.findViewById(R.id.icd_div_footer)
+        selectBtn = this.dialogView.findViewById(R.id.icd_btn_select)
+        cancelBtn = this.dialogView.findViewById(R.id.icd_btn_cancel)
+        clearBtn = this.dialogView.findViewById(R.id.icd_btn_clear)
         selectBtn.setOnClickListener { presenter?.onSelectBtnClicked() }
         cancelBtn.setOnClickListener { presenter?.onCancelBtnClicked() }
         clearBtn.setOnClickListener { presenter?.onClearBtnClicked() }
-
-        // Dialog
-        val dialog = Dialog(contextWrapper)
-        // Needed on API 16 to remove header space, see https://stackoverflow.com/a/41752000/5288316
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
-
-        // Get maximum dialog dimensions
-        val fgPadding = Rect()
-        val window = dialog.window!!
-        window.decorView.background.getPadding(fgPadding)
-        val metrics = context.resources.displayMetrics
-        var height = metrics.heightPixels - fgPadding.top - fgPadding.bottom
-        var width = metrics.widthPixels - fgPadding.top - fgPadding.bottom
-
-        // Set dialog's dimensions
-        if (width > maxDialogWidth) width = maxDialogWidth
-        if (height > maxDialogHeight) height = maxDialogHeight
-        window.setLayout(width, height)
-
-        // Set dialog's content
-        dialogView.layoutParams = ViewGroup.LayoutParams(width, height)
-        dialog.setContentView(dialogView)
-
-        dialog.setOnShowListener {
-            // Attach the presenter
-            presenter = IconDialogPresenter()
-            presenter?.attach(this, state)
-        }
-
-        if (state != null) {
-            settings = state.getParcelable("settings")!!
-
-            // Restore layout manager state, which isn't saved by recycler view.
-            listLayout.onRestoreInstanceState(state.getParcelable("listLayoutState"))
-
-            // Restore search EditText state, which *should* be restored, but apparently isn't.
-            // The state of the view is actually saved in onSaveInstanceState, and it is still
-            // present here in the "state" bundle, but it doesn't get restored for some reason!
-            searchEdt.onRestoreInstanceState(state.getParcelable("searchEdtState"))
-        }
-
-        return dialog
     }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+
+        //Remove the bottomSheet dialog background
+        (view!!.parent as View).setBackgroundColor(Color.TRANSPARENT)
+
+        //set dismiss on click of empty background above content (top margin)
+        view!!.setOnClickListener {
+            dismiss()
+        }
+    }
+
 
     override fun onSaveInstanceState(state: Bundle) {
         super.onSaveInstanceState(state)
